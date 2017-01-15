@@ -1,0 +1,9 @@
+.btn{
+    font-size: 12px;
+}
+
+.line{
+    height: 1px;
+    background-color: grey;
+    width: 100%;
+}
