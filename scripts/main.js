@@ -1,11 +1,40 @@
 angular.module('TimeCounter', [])
   .controller('CounterController', function($scope,$interval) {
-     
+
+    if (Notification.permission !== "granted"){
+        Notification.requestPermission();
+    }
+
     $scope.projectname =null;
     $scope.projects = JSON.parse(window.localStorage.getItem('projects')) || [];
-    
-   
-  
+    $scope.remind = JSON.parse(window.localStorage.getItem('reminder')) || false;
+
+
+
+    var alarmClock = {
+    setup: function () {
+
+        if ($scope.remind) {
+                console.log("lanzo el mensaje de activar");
+                chrome.runtime.sendMessage({greeting: "activate"}, function(response) {
+                    console.log(response.farewell);
+                });
+
+        } else {
+                console.log("lanzo el mensaje de desactivar");
+                chrome.runtime.sendMessage({greeting: "desactivate"}, function(response) {
+                    console.log(response.farewell);
+                });
+        }
+     }
+    };
+
+    $scope.remindChange = function(){
+       window.localStorage.setItem('reminder',JSON.stringify($scope.remind));
+       alarmClock.setup();
+    };
+
+
     $scope.addProject = function(){
           var project = {
           name:'',
@@ -23,43 +52,43 @@ angular.module('TimeCounter', [])
       window.localStorage.setItem('projects',JSON.stringify($scope.projects));
 
     };
-    
+
     $scope.click = function(indice){
 
-        
+
 
         if(!$scope.projects[indice].run){
-          
+
           $scope.projects[indice].iconClass = 'glyphicon glyphicon-pause buttonIcon';
           $scope.projects[indice].run = true;
           $scope.projects[indice].acumulated.push(new Date);
           window.localStorage.setItem('projects',JSON.stringify($scope.projects));
 
-      
+
         }else{
           $scope.projects[indice].iconClass = 'glyphicon glyphicon-play buttonIcon';
           $scope.projects[indice].run = false;
-          $scope.projects[indice].acumulated.push(new Date); 
-          
+          $scope.projects[indice].acumulated.push(new Date);
+
           if(angular.equals(typeof($scope.projects[indice].acumulated[0]),'string')){
             $scope.projects[indice].acumulated[0]= new Date($scope.projects[indice].acumulated[0]);
           }
 
           //var temp = $scope.projects[indice].acumulated[1].getTime() - $scope.projects[indice].acumulated[0].getTime();
-         /* $scope.projects[indice].Work = 
-              ($scope.projects[indice].Work - $scope.projects[indice].acumulated[0].getTime()) 
+         /* $scope.projects[indice].Work =
+              ($scope.projects[indice].Work - $scope.projects[indice].acumulated[0].getTime())
               + ( temp - $scope.projects[indice].Work );  */
-         
-          $scope.projects[indice].acumulated = [];
-          
-          
 
-          
-          toTime(indice); 
+          $scope.projects[indice].acumulated = [];
+
+
+
+
+          toTime(indice);
           window.localStorage.setItem('projects',JSON.stringify($scope.projects));
 
         }
-        
+
     };
 
     function toTime(indice){
@@ -70,7 +99,7 @@ angular.module('TimeCounter', [])
       if(($scope.projects[indice].seconds % 60) >=0){
         $scope.projects[indice].minutes = parseInt($scope.projects[indice].seconds /60);
        $scope.projects[indice].seconds = $scope.projects[indice].seconds %60;
-       
+
 
         if(($scope.projects[indice].minutes%60) >=0){
           $scope.projects[indice].hours = parseInt($scope.projects[indice].minutes/60);
@@ -79,7 +108,7 @@ angular.module('TimeCounter', [])
       }
 
     }
-  
+
     $scope.delete = function(indice){
       $scope.projects.splice(indice,1);
      window.localStorage.setItem('projects',JSON.stringify($scope.projects));
@@ -103,18 +132,20 @@ angular.module('TimeCounter', [])
               }
         });
       }
-      
+
     AdjuntsBackground();
- 
-  
+
     $interval(function() {
           updateTimers();
         }, 1000);
-     
-       
 
-        
 
-    
 
- });
+
+
+
+
+
+
+
+});
